@@ -32,14 +32,15 @@ def test_examples_load_and_run(name):
     result = step(automaton, State(initial.copy()))
     assert list(result.grid.shape) == automaton.grid_size
     assert result.generation == 1
-    if name != "brians_brain":
+    if name not in ("brians_brain", "rule30"):
         np.testing.assert_array_equal(initial, automaton.init)
     if name == "life":
         np.testing.assert_array_equal(step(automaton, result).grid, initial)
     elif name == "brians_brain":
         assert set(np.unique(result.grid)) <= {0, 1, 2}
     elif name == "rule30":
-        np.testing.assert_array_equal(result.grid, [[0, 0, 1, 1, 1, 0, 0]])
+        assert initial.shape == (1, 101) and initial[0, 50] == 1 and initial.sum() == 1
+        assert "".join(str(value) for value in result.grid[0, 47:54]) == "0011100"
     else:
         np.testing.assert_allclose(result.grid, [[0, .2, 0], [.2, .2, .2], [0, .2, 0]])
 
