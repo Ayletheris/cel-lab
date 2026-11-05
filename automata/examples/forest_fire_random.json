@@ -1,0 +1,16 @@
+{
+  "name": "Forest Fire Random",
+  "version": 1,
+  "grid": {"width": 20, "height": 20, "boundary": "wrap"},
+  "states": [0, 1, 2],
+  "neighborhood": {"type": "moore", "radius": 1},
+  "rules": [
+    {"type": "count", "from": 2, "to": 0},
+    {"type": "count", "from": 1, "count": 2, "in": [1, 2, 3, 4, 5, 6, 7, 8], "to": 2},
+    {"type": "count", "from": 1, "to": 2, "prob": 0.01},
+    {"type": "count", "from": 0, "to": 1, "prob": 0.05}
+  ],
+  "init": {"type": "random", "percentages": {"1": 50}, "seed": 42},
+  "experiment": {"N": 100, "seed": 42, "save_intermediate": true,
+                 "checkpoint_interval": 10, "output_dir": "saves/forest-fire"}
+}

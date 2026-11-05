@@ -110,11 +110,15 @@ def _rules(rules, states, neighborhood, height):
     result, seen = [], set()
     for index, rule in enumerate(rules):
         path = f"rules[{index}]"
-        _object(rule, {"type", "from", "count", "in", "to", "otherwise"},
+        _object(rule, {"type", "from", "count", "in", "to", "otherwise", "prob"},
                 {"type", "from", "to"}, path)
         conditional = {"count", "in", "otherwise"} & rule.keys()
-        _require(not conditional or len(conditional) == 3,
-                 f"{path}: count, in si otherwise trebuie specificate impreuna.")
+        _require(not conditional or {"count", "in"} <= rule.keys(),
+                 f"{path}: count si in trebuie specificate impreuna cu otherwise.")
+        if "prob" in rule:
+            prob = rule["prob"]
+            _require(type(prob) in (int, float) and 0 <= prob <= 1,
+                     f"{path}.prob: probabilitatea trebuie sa fie intre 0 si 1.")
         for key in ("from", "count", "to", "otherwise"):
             if key in rule:
                 _integer(rule[key], f"{path}.{key}")
@@ -128,14 +132,18 @@ def _rules(rules, states, neighborhood, height):
             _require(len(set(counts)) == len(counts), f"{path}.in: valori duplicate.")
         if rule["from"] in seen:
             continue
-        seen.add(rule["from"])
         converted = {"state": rule["from"], "next_state": rule["to"]}
+        if "prob" in rule:
+            converted["prob"] = rule["prob"]
         if conditional:
             converted.update(neighbor_state=rule["count"], counts=rule["in"])
             result.append(converted)
-            result.append({"state": rule["from"], "next_state": rule["otherwise"]})
+            if "otherwise" in rule:
+                result.append({"state": rule["from"], "next_state": rule["otherwise"]})
         else:
             result.append(converted)
+        if "otherwise" in rule or not conditional and rule.get("prob", 1) == 1:
+            seen.add(rule["from"])
     return result
 
 

@@ -143,11 +143,12 @@
         "count": {"type": "integer"},
         "in": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
         "to": {"type": "integer"},
-        "otherwise": {"type": "integer"}
+        "otherwise": {"type": "integer"},
+        "prob": {"type": "number", "minimum": 0, "maximum": 1}
       },
       "dependentRequired": {
-        "count": ["in", "otherwise"],
-        "in": ["count", "otherwise"],
+        "count": ["in"],
+        "in": ["count"],
         "otherwise": ["count", "in"]
       }
     },

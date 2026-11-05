@@ -39,13 +39,19 @@ respectiv 2 vecini într-o grilă 1D.
 
 `from` este starea celulei, `count` este starea vecinilor numărați, iar `in`
 este lista numerelor de vecini acceptate. Rezultatul este `to` când numărul
-aparține listei, respectiv `otherwise` în caz contrar. Cele trei câmpuri
-`count`, `in`, `otherwise` apar împreună sau lipsesc toate; când lipsesc,
-tranziția `from` → `to` este necondiționată.
+aparține listei, respectiv `otherwise` în caz contrar. `count` și `in` apar
+împreună. `otherwise` este opțional: dacă lipsește și condiția nu se potrivește,
+se verifică următoarea regulă; fără o altă regulă, celula își păstrează starea.
+Fără `count` și `in`, regula este necondiționată.
 
-Regulile se parcurg în ordinea listei. Prima cu `from` egal cu starea curentă
-decide rezultatul, inclusiv ramura `otherwise`; nu se continuă cu următoarea.
-Dacă nu există o astfel de regulă, starea rămâne aceeași.
+`prob` este opțional și reprezintă șansa între 0 și 1 ca regula să se aplice.
+Dacă extragerea eșuează, se verifică următoarea regulă. Reguli condiționate
+sunt aplicate înaintea celor necondiționate. Pentru reproducere se transmite
+același generator NumPy la fiecare pas; la reluare se restaurează și starea lui.
+
+Prima regulă care se aplică decide rezultatul. O regulă cu `otherwise` acoperă
+și cazul în care condiția nu se potrivește. Dacă nu se aplică nicio regulă,
+starea rămâne aceeași.
 
 ### Game of Life
 
@@ -164,13 +170,14 @@ Erorile trebuie să indice câmpul și cauza, fără corectare tacită.
 Motorul existent are un API intern diferit. Încărcătorul va converti `wrap`
 în `toroidal`, `grid` în `grid_size: [height, width]` și va construi kernelul
 din `neighborhood`. O regulă condiționată se traduce într-o regulă internă cu
-`state`, `neighbor_state`, `counts`, `next_state`, urmată de o ramură
-necondiționată pentru același `state`, cu rezultatul `otherwise`. Perechile
-rămân în ordinea din JSON. Pentru tabel se transmite `table` către
+`state`, `neighbor_state`, `counts`, `next_state`. Dacă există `otherwise`,
+se adaugă și ramura necondiționată pentru același `state`. `prob` este transmis
+motorului. Pentru tabel se transmite `table` către
 `apply_table`, pentru numeric se transmite `expression` către `apply_numeric`.
 Regulile interne nu sunt formatul de ieșire al parserului de limbaj natural.
-Pentru a respecta prioritatea primei reguli `from`, încărcătorul ignoră la
-conversie regulile ulterioare cu același `from`, după validarea lor.
+Încărcătorul ignoră regulile ulterioare cu același `from` după o regulă care
+acoperă toate cazurile. După o condiție fără `otherwise` sau o extragere
+probabilistică eșuată, regulile ulterioare rămân disponibile.
 Kernelul este construit de motor la simulare; pe o singură linie folosește
 numai offseturile orizontale.
 
@@ -224,8 +231,7 @@ Funcția adună problemele și nu modifică obiectul primit. Acceptă atât
 
 Erorile includ stări nedeclarate în reguli și condiții, dimensiuni nepozitive,
 vecinătăți necunoscute și probabilități `prob` în afara intervalului închis
-`[0, 1]`. `prob` este un parametru al regulilor interne ale motorului;
-validatorul nu extinde schema JSON v1 pentru a-l accepta în fișiere.
+`[0, 1]`. `prob` este acceptat și în regulile `count` din JSON.
 
 Două reguli se contrazic dacă au aceeași stare sursă și aceeași condiție, dar
 rezultate diferite, inclusiv rezultate `otherwise` diferite. Ordinea cheilor,
