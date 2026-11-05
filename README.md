@@ -39,6 +39,73 @@ Windows sunt în [tests/io/README.md](tests/io/README.md).
 
 ## Folosire
 
+### Pas cu pas, prima data (Windows, PowerShell)
+
+```
+git clone https://github.com/Ayletheris/cel-lab.git
+cd cel-lab
+python -m venv .venv
+.venv\Scripts\python -m pip install -e . pytest
+.venv\Scripts\python -m pytest -q
+```
+
+Pe Mac / Linux e la fel, doar ca se scrie `.venv/bin/python` in loc de `.venv\Scripts\python`.
+
+### Demo pentru laborator (Livrabil 2)
+
+```
+.venv\Scripts\python scripts/demo_l6.py
+```
+
+Pentru Game of Life, Brian's Brain, Rule 30 si Forest Fire (cu probabilitati) arata:
+descrierea citita din JSON, generatia curenta, generatia noua dupa reguli,
+salvarea starii, restaurarea ei si continuarea simularii.
+
+### Rulare din linia de comanda
+
+```
+.venv\Scripts\python -m cellab.cli run automata/examples/game_of_life.json --generations 20 --seed 1 --show
+```
+
+- `--generations N` = cate generatii, `--seed S` = seed pt partile aleatoare
+- `--show` = afiseaza generatiile pastrate in text (la Rule 30 cate un rand pe generatie)
+- `--checkpoint-interval K` = pastreaza / salveaza din K in K generatii
+  (`--checkpoint-interval 1` = toate)
+- `--no-save-intermediate` = salveaza doar starea finala
+- `--output-dir folder` = unde se salveaza (implicit `saves/`)
+
+La final starea e salvata in `saves/<nume-automat>-gen<N>.npz`. Ca sa continui de acolo:
+
+```
+.venv\Scripts\python -m cellab.cli run automata/examples/game_of_life.json --generations 20 --resume saves/game-of-life-gen20.npz
+```
+
+Starea finala se salveaza impreuna cu generatorul aleator, deci continuarea e identica cu o
+rulare fara pauza, si la automatele cu probabilitati. Generatiile intermediare se salveaza
+fara generator, deci la automatele cu probabilitati continuarea de la ele nu e identica.
+
+Alte comenzi (toate primesc fisierul JSON si optiunile de mai sus):
+
+| Comanda | Ce face |
+|---|---|
+| `validate fisier.json` | verifica descrierea si arata problemele |
+| `state-after fisier.json --generations N` | Q1: starea dupa N generatii |
+| `count fisier.json --generations N` | Q4: cate celule din fiecare stare sunt dupa N generatii |
+| `stable fisier.json [--max-steps K]` | Q2: de la ce generatie grila nu se mai schimba |
+| `cycle fisier.json [--max-steps K]` | Q5: daca intra in ciclu, de unde si cat de lung |
+
+Q2 si Q5 nu merg la automatele cu probabilitati: acolo o grila care se repeta nu inseamna
+ca de acum se repeta tot.
+
+### Cum adaugi un automat nou
+
+1. Copiezi un fisier din `automata/examples/` (de ex. `game_of_life.json`).
+2. Schimbi grila, starile, regulile si `init` (formatul e in [docs/design/format.md](docs/design/format.md)).
+3. Verifici: `.venv\Scripts\python -m cellab.cli validate fisierul_tau.json`
+4. Rulezi: `.venv\Scripts\python -m cellab.cli run fisierul_tau.json --generations 10 --show`
+
+### Din cod (Python)
+
 Încărcare din fișier sau text JSON:
 
 ```python
