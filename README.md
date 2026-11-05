@@ -52,6 +52,12 @@ state = step(automaton, State(np.array(automaton.init)))
 ridică `ValueError` cu un mesaj scurt pentru intrări invalide. Formatul și
 valorile implicite sunt în [docs/design/format.md](docs/design/format.md).
 
+`from cellab.io import validate` permite verificarea unui `Automaton` sau a
+unui dicționar JSON. `validate(automaton)` întoarce toate problemele într-o
+listă de mesaje `Eroare:` / `Avertisment:`; pentru o descriere completă și
+corectă întoarce `[]`. Valorile implicite sunt 50×50, margine wrap și Moore
+cu raza 1; folosirea lor este raportată prin avertismente.
+
 `apply_rules(grid, rules, kernel, boundary="fixed")` aplică regulile în ordine,
 pe grila veche. O regulă fără `condition` și fără `counts` este ramura „altfel”;
 fără nicio potrivire, celula își păstrează starea. Formatul vechi cu `neighbor_state` și

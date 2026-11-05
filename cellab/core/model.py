@@ -1,6 +1,6 @@
 """Structurile de date folosite de motorul automatelor celulare."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
@@ -17,6 +17,7 @@ class Automaton:
     rules: Any
     init: Any = None
     experiment: Any = None
+    defaults_used: list[str] = field(default_factory=list, repr=False, compare=False)
 
 
 @dataclass

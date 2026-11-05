@@ -45,11 +45,11 @@ def test_examples_load_and_run(name):
 
 def test_defaults_and_independent_rows():
     automaton = load({"rules": [{"type": "count", "from": 0, "to": 1}]})
-    assert automaton.grid_size == [10, 10]
-    assert automaton.boundary == "fixed"
+    assert automaton.grid_size == [50, 50]
+    assert automaton.boundary == "toroidal"
     assert automaton.states == [0, 1]
     assert automaton.neighborhood == {"type": "moore", "radius": 1}
-    assert automaton.init == [[0] * 10 for _ in range(10)]
+    assert automaton.init == [[0] * 50 for _ in range(50)]
     automaton.init[0][0] = 1
     assert automaton.init[1][0] == 0
 
@@ -115,7 +115,7 @@ def test_invalid_text(text, message):
     ({"neighborhood": {"type": "other"}}, "neighborhood.type"),
     ({"states": [0, 0]}, "duplicate"),
     ({"states": [False, 1]}, "states"),
-    ({"states": [1, 2]}, "starea 0"),
+    ({"states": [1, 2], "grid": {"boundary": "fixed"}}, "starea 0"),
     ({"init": [[0]]}, "init"),
     ({"init": [[0], [0], [0]]}, "lungime"),
     ({"init": [[0, 0, 2]] * 3}, "stare nedeclarata"),

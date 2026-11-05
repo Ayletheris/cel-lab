@@ -192,8 +192,8 @@ Valorile implicite se aplică numai câmpurilor absente, nu celor cu `null`:
 | Câmp absent | Valoare implicită |
 |---|---|
 | `version` | `1` |
-| `grid.width`, `grid.height` | `10`, respectiv `10` |
-| `grid.boundary` | `"fixed"` |
+| `grid.width`, `grid.height` | `50`, respectiv `50` |
+| `grid.boundary` | `"wrap"` |
 | `states` | `[0, 1]` |
 | `neighborhood.type` | `"moore"` |
 | `neighborhood.radius` | `1` |
@@ -203,8 +203,45 @@ Valorile implicite se aplică numai câmpurilor absente, nu celor cu `null`:
 obligatoriu și nevid; încărcătorul nu inventează comportamentul automatului.
 Regulile numerice trebuie să declare explicit `states: ["number"]`, iar cele
 de tabel trebuie să declare `grid.height: 1`.
-Aceste valori sunt propuse pentru cardul „Citirea unui automat din fișier”;
-cardul următor, care le-ar preciza, nu este prezent în repository.
+Valorile implicite sunt centralizate în `cellab/io/defaults.py`, conform
+cardului „Validarea descrierii”. Fișierele complete păstrează propriile valori.
+
+## Validarea descrierii
+
+```python
+from cellab.io import load_automaton, validate
+
+probleme = validate(load_automaton("automata/examples/life.json"))
+```
+
+`validate(automaton)` întoarce o listă de texte în română. Un automat complet
+și corect întoarce `[]`. Mesajele încep cu `Eroare:` sau `Avertisment:`.
+Funcția adună problemele și nu modifică obiectul primit. Acceptă atât
+`Automaton`, cât și un dicționar în formatul JSON, înainte de încărcare.
+
+Erorile includ stări nedeclarate în reguli și condiții, dimensiuni nepozitive,
+vecinătăți necunoscute și probabilități `prob` în afara intervalului închis
+`[0, 1]`. `prob` este un parametru al regulilor interne ale motorului;
+validatorul nu extinde schema JSON v1 pentru a-l accepta în fișiere.
+
+Două reguli se contrazic dacă au aceeași stare sursă și aceeași condiție, dar
+rezultate diferite, inclusiv rezultate `otherwise` diferite. Ordinea cheilor,
+a numărătorilor și a termenilor `all`/`any` nu contează la comparare. Nu se
+încearcă demonstrarea echivalenței dintre condiții scrise în forme diferite.
+Ramura necondiționată de rezervă și o regulă condiționată nu sunt un conflict.
+Încărcătorul respinge contradicțiile înainte să elimine regulile umbrite.
+
+O stare fără nicio regulă sursă produce avertismentul că va rămâne la fel.
+Regulile interne fără stare sursă se aplică tuturor stărilor. Regulile
+numerice și tabelul binar sunt tratate separat, fără avertismente false
+pentru exemplele complete.
+
+Parametrii absenți sunt raportați cu valoarea implicită folosită. Încărcătorul
+păstrează numele câmpurilor completate în `Automaton.defaults_used`, astfel
+încât avertismentele rămân disponibile după încărcare. Pentru un `Automaton`
+construit manual, `None` la dimensiuni, margine sau vecinătate indică un
+parametru lipsă; validatorul raportează valoarea implicită, fără să o scrie
+în obiect. Încărcătorul rămâne strict și respinge `null` în fișier.
 
 ## Stabilitate și acordul echipei
 

@@ -5,6 +5,8 @@ from pathlib import Path
 
 from cellab.core.model import Automaton
 from cellab.core.numeric import COMPARISONS, DIRECTIONS, FUNCTIONS, OPERATORS
+from cellab.io.defaults import DEFAULTS
+from cellab.io.validate import validate
 
 
 def _require(condition, message):
@@ -146,16 +148,17 @@ def load_automaton_from_text(text: str) -> Automaton:
         message = str(error)
         raise ValueError(message if message.startswith("JSON:") else "JSON invalid: numar prea mare.") from None
     _object(data, {"version", "grid", "states", "neighborhood", "rules", "init"}, {"rules"}, "automat")
-    _integer(data.get("version", 1), "version")
-    _require(data.get("version", 1) == 1, "version: este acceptata doar versiunea 1.")
+    _integer(data.get("version", DEFAULTS["version"]), "version")
+    _require(data.get("version", DEFAULTS["version"]) == 1, "version: este acceptata doar versiunea 1.")
     grid = data.get("grid", {})
     _object(grid, {"width", "height", "boundary"}, set(), "grid")
-    width, height = grid.get("width", 10), grid.get("height", 10)
+    width = grid.get("width", DEFAULTS["grid.width"])
+    height = grid.get("height", DEFAULTS["grid.height"])
     _integer(width, "grid.width", 1)
     _integer(height, "grid.height", 1)
-    boundary = grid.get("boundary", "fixed")
+    boundary = grid.get("boundary", DEFAULTS["grid.boundary"])
     _require(boundary in ("fixed", "wrap"), "grid.boundary: foloseste fixed sau wrap.")
-    states = data.get("states", [0, 1])
+    states = data.get("states", DEFAULTS["states"].copy())
     _require(isinstance(states, list) and bool(states), "states: lista nevida necesara.")
     numeric = states == ["number"]
     if not numeric:
@@ -163,7 +166,7 @@ def load_automaton_from_text(text: str) -> Automaton:
             _integer(value, "states")
         _require(len(set(states)) == len(states), "states: valori duplicate.")
         _require(boundary != "fixed" or 0 in states, "states: marginea fixed necesita starea 0.")
-    neighborhood = {"type": "moore", "radius": 1}
+    neighborhood = {"type": DEFAULTS["neighborhood.type"], "radius": DEFAULTS["neighborhood.radius"]}
     supplied = data.get("neighborhood", {})
     _object(supplied, {"type", "radius"}, set(), "neighborhood")
     neighborhood.update(supplied)
@@ -186,8 +189,15 @@ def load_automaton_from_text(text: str) -> Automaton:
             else:
                 _integer(value, path)
                 _require(value in states, f"{path}: stare nedeclarata.")
+    conflicts = [problem for problem in validate(data) if "contrazice" in problem]
+    _require(not conflicts, " ".join(conflicts))
+    defaults_used = []
+    for key in DEFAULTS:
+        parent, separator, child = key.partition(".")
+        if (separator and child not in data.get(parent, {})) or (not separator and key not in data):
+            defaults_used.append(key)
     return Automaton([height, width], "toroidal" if boundary == "wrap" else "fixed",
-                     states, neighborhood, rules, init)
+                     states, neighborhood, rules, init, defaults_used=defaults_used)
 
 
 def load_automaton(cale: str | Path) -> Automaton:
