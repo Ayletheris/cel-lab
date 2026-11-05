@@ -33,6 +33,10 @@ pip install -e .
 pip install pytest
 ```
 
+Testele pentru descriere, stare și salvare se rulează cu
+`python -m pytest tests/io/ -q`. Cazurile acoperite și comanda verificată pe
+Windows sunt în [tests/io/README.md](tests/io/README.md).
+
 ## Folosire
 
 Încărcare din fișier sau text JSON:

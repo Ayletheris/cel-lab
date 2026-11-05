@@ -3,9 +3,9 @@ import json
 import numpy as np
 import pytest
 
-from cellab.core.model import Automaton, State
+from cellab.core.model import Automaton, Experiment, State
 from cellab.core.step import step
-from cellab.io import load_state, save_state
+from cellab.io import GenerationStore, load_state, save_state
 from tests.core.test_probability import FOREST
 
 
@@ -42,6 +42,39 @@ def test_forest_fire_resume_matches_ten_uninterrupted_steps(tmp_path, engine):
     assert restored.generation == continuous.generation == 10
     assert np.array_equal(restored.grid, continuous.grid)
     assert np.array_equal(restored_rng.random(100), continuous_rng.random(100))
+
+
+@pytest.mark.parametrize("engine", ENGINES, ids=lambda cls: cls.__name__)
+def test_forest_fire_resume_from_generation_store_checkpoint(tmp_path, engine):
+    automaton = forest()
+    initial = np.random.default_rng(1).integers(0, 2, size=(20, 20), dtype=np.uint8)
+    uninterrupted_rng = np.random.Generator(engine(123))
+    expected = run(automaton, State(initial.copy()), uninterrupted_rng, 10)
+
+    rng = np.random.Generator(engine(123))
+    experiment = Experiment(N=10, seed=123, checkpoint_interval=5, output_dir=tmp_path / "first")
+    store = GenerationStore(experiment, automaton, mode="disk", rng=rng)
+    state = State(initial.copy())
+    store.add(state)
+    for _ in range(5):
+        state = step(automaton, state, rng)
+        store.add(state)
+    assert store.count() == 2
+    checkpoint = experiment.output_dir / "generation-0000000005.npz"
+    restored_rng = np.random.Generator(engine(999))
+    restored = load_state(checkpoint, automaton, restored_rng)
+    resumed = GenerationStore(
+        Experiment(N=10, seed=123, checkpoint_interval=5, output_dir=tmp_path / "resumed"),
+        automaton, mode="disk", rng=restored_rng,
+    )
+    resumed.add(restored)
+    for _ in range(5):
+        restored = step(automaton, restored, restored_rng)
+        resumed.add(restored)
+    assert resumed.count() == 2
+    assert resumed.get(5).generation == 5 and resumed.last().generation == 10
+    assert np.array_equal(resumed.get(10).grid, expected.grid)
+    assert np.array_equal(restored_rng.random(100), uninterrupted_rng.random(100))
 
 
 @pytest.mark.parametrize("engine", ENGINES, ids=lambda cls: cls.__name__)

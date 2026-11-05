@@ -36,6 +36,19 @@ def test_random_thirty_percent_and_seed_reproducibility():
     assert not np.array_equal(first.grid, generate_initial_state(model, {**spec, "seed": 43}).grid)
 
 
+@pytest.mark.parametrize("seed", [0, 42, 2026])
+def test_random_distribution_for_all_declared_states(seed):
+    model = automaton({"type": "empty"}, (100, 100))
+    model.states = [0, 1, 2]
+    spec = {"type": "random", "percentages": {"1": 30, "2": 20}, "seed": seed}
+    first = generate_initial_state(model, spec)
+    second = generate_initial_state(model, spec)
+    assert np.array_equal(first.grid, second.grid)
+    assert set(np.unique(first.grid)) == {0, 1, 2}
+    for state, expected in ((0, .5), (1, .3), (2, .2)):
+        assert abs(np.mean(first.grid == state) - expected) < .02
+
+
 @pytest.mark.parametrize("name", ["life_random", "rule30_center", "life_glider", "life_empty"])
 def test_generated_examples_load_validate_and_run(name):
     model = load_automaton(EXAMPLES / f"{name}.json")

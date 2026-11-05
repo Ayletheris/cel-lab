@@ -33,8 +33,9 @@ def test_twenty_generations_keep_every_fifth(tmp_path, mode):
         state = store.get(t)
         assert state.generation == t
         assert np.array_equal(state.grid, snapshots[t])
-    with pytest.raises(KeyError, match="Generatia 19 nu este pastrata"):
-        store.get(19)
+    for t in set(range(21)) - {0, 5, 10, 15, 20}:
+        with pytest.raises(KeyError, match=f"Generatia {t} nu este pastrata"):
+            store.get(t)
     assert store.last().generation == 20
     if mode == "disk":
         assert len(list(experiment.output_dir.glob("*.npz"))) == 5
@@ -50,8 +51,9 @@ def test_no_intermediates_keeps_only_first_and_last(tmp_path, mode):
     assert np.array_equal(store.get(0).grid, snapshots[0])
     assert np.array_equal(store.get(20).grid, snapshots[20])
     assert store.last().generation == 20
-    with pytest.raises(KeyError):
-        store.get(5)
+    for t in range(1, 20):
+        with pytest.raises(KeyError, match=f"Generatia {t} nu este pastrata"):
+            store.get(t)
     if mode == "disk":
         assert len(list(tmp_path.glob("*.npz"))) == 2
 
