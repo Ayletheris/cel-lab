@@ -20,6 +20,7 @@ from cellab.cli.render import render_generations, render_rows, render_text
 from cellab.core.run import run
 from cellab.io import load_automaton, load_initial_state, load_state, save_state, validate
 from cellab.questions.basic import count_all, state_after
+from cellab.questions.stability import MAX_STEPS, find_cycle, find_stable, generation_in_cycle
 
 HELP = """folosire: python -m cellab.cli <comanda> fisier.json [optiuni]
 
@@ -28,6 +29,8 @@ comenzi:
   validate     verifica fisierul json si arata problemele
   state-after  Q1: arata starea dupa N generatii (N = --generations)
   count        Q4: cate celule din fiecare tip sunt dupa N generatii
+  stable       Q2: de la ce generatie grila nu se mai schimba
+  cycle        Q5: daca si unde intra intr-un ciclu
 
 pt optiunile unei comenzi: python -m cellab.cli <comanda> --help"""
 
@@ -160,17 +163,24 @@ def question_parser(name, description):
     return parser
 
 
-def load_for_question(parser, argv):
-    """citeste automatul si starea initiala; N vine din --generations (sau din fisier)"""
+def load_for_question(parser, argv, extra_options=()):
+    """citeste automatul si starea initiala; N vine din --generations (sau din fisier).
+    extra_options = optiuni in plus ale comenzii (ex. max_steps), care nu sunt ale experimentului"""
     values = vars(parser.parse_args(argv))
     path = values.pop("automaton")
+
+    extras = {}
+    for name in extra_options:
+        extras[name] = values.pop(name)
+
+    # ce a ramas in values sunt doar parametrii experimentului
     automaton = load_automaton(path, experiment_overrides=values)
-    return automaton, load_initial_state(automaton)
+    return automaton, load_initial_state(automaton), extras
 
 
 def state_after_command(argv) -> int:
     parser = question_parser("state-after", "Q1: starea dupa N generatii")
-    automaton, state = load_for_question(parser, argv)
+    automaton, state, _ = load_for_question(parser, argv)
     n = automaton.experiment.N
 
     final = state_after(automaton, state, n)
@@ -181,7 +191,7 @@ def state_after_command(argv) -> int:
 
 def count_command(argv) -> int:
     parser = question_parser("count", "Q4: cate celule de fiecare tip sunt dupa N generatii")
-    automaton, state = load_for_question(parser, argv)
+    automaton, state, _ = load_for_question(parser, argv)
     n = automaton.experiment.N
 
     final = state_after(automaton, state, n)
@@ -191,11 +201,48 @@ def count_command(argv) -> int:
     return 0
 
 
+def stable_command(argv) -> int:
+    parser = question_parser("stable", "Q2: de la ce generatie grila nu se mai schimba")
+    parser.add_argument("--max-steps", type=int, default=MAX_STEPS, help="cati pasi incercam cel mult")
+    automaton, state, extras = load_for_question(parser, argv, ["max_steps"])
+    max_steps = extras["max_steps"]
+
+    generation = find_stable(automaton, state, max_steps)
+    if generation is None:
+        print(f"nu devine stabil in primii {max_steps} pasi "
+              "(poate intra intr-un ciclu: incearca comanda cycle)")
+    else:
+        print(f"stabil de la generatia {generation}: de acolo grila nu se mai schimba")
+    return 0
+
+
+def cycle_command(argv) -> int:
+    parser = question_parser("cycle", "Q5: daca si unde intra intr-un ciclu")
+    parser.add_argument("--max-steps", type=int, default=MAX_STEPS, help="cati pasi incercam cel mult")
+    automaton, state, extras = load_for_question(parser, argv, ["max_steps"])
+    max_steps = extras["max_steps"]
+
+    cycle = find_cycle(automaton, state, max_steps)
+    if cycle is None:
+        print(f"nu s-a gasit niciun ciclu in primii {max_steps} pasi (nedeterminat)")
+        return 0
+
+    mu, lam = cycle
+    print(f"intra in ciclu: incepe la generatia {mu}, lungime {lam}")
+    if lam == 1:
+        print("(ciclu de lungime 1 = stare stabila)")
+    n = automaton.experiment.N
+    print(f"deci starea la generatia {n} e aceeasi cu starea la generatia {generation_in_cycle(n, mu, lam)}")
+    return 0
+
+
 COMMANDS = {
     "run": run_command,
     "validate": validate_command,
     "state-after": state_after_command,
     "count": count_command,
+    "stable": stable_command,
+    "cycle": cycle_command,
 }
 
 
