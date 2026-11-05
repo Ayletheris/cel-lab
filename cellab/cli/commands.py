@@ -16,15 +16,18 @@ import numpy as np
 
 from cellab.cli.experiment import add_experiment_arguments
 from cellab.cli.experiment import main as show_experiment_config
-from cellab.cli.render import render_generations, render_rows
+from cellab.cli.render import render_generations, render_rows, render_text
 from cellab.core.run import run
 from cellab.io import load_automaton, load_initial_state, load_state, save_state, validate
+from cellab.questions.basic import count_all, state_after
 
 HELP = """folosire: python -m cellab.cli <comanda> fisier.json [optiuni]
 
 comenzi:
-  run        ruleaza automatul N generatii si salveaza starea finala
-  validate   verifica fisierul json si arata problemele
+  run          ruleaza automatul N generatii si salveaza starea finala
+  validate     verifica fisierul json si arata problemele
+  state-after  Q1: arata starea dupa N generatii (N = --generations)
+  count        Q4: cate celule din fiecare tip sunt dupa N generatii
 
 pt optiunile unei comenzi: python -m cellab.cli <comanda> --help"""
 
@@ -149,9 +152,50 @@ def validate_command(argv) -> int:
     return 1 if has_errors else 0
 
 
+def question_parser(name, description):
+    """parser comun pt intrebari: fisierul json + parametrii experimentului"""
+    parser = argparse.ArgumentParser(prog=f"python -m cellab.cli {name}", description=description)
+    parser.add_argument("automaton", help="fisierul json al automatului")
+    add_experiment_arguments(parser)
+    return parser
+
+
+def load_for_question(parser, argv):
+    """citeste automatul si starea initiala; N vine din --generations (sau din fisier)"""
+    values = vars(parser.parse_args(argv))
+    path = values.pop("automaton")
+    automaton = load_automaton(path, experiment_overrides=values)
+    return automaton, load_initial_state(automaton)
+
+
+def state_after_command(argv) -> int:
+    parser = question_parser("state-after", "Q1: starea dupa N generatii")
+    automaton, state = load_for_question(parser, argv)
+    n = automaton.experiment.N
+
+    final = state_after(automaton, state, n)
+    print(f"starea dupa {n} generatii:")
+    print(render_text(final, automaton))
+    return 0
+
+
+def count_command(argv) -> int:
+    parser = question_parser("count", "Q4: cate celule de fiecare tip sunt dupa N generatii")
+    automaton, state = load_for_question(parser, argv)
+    n = automaton.experiment.N
+
+    final = state_after(automaton, state, n)
+    print(f"dupa {n} generatii:")
+    for value, count in count_all(automaton, final).items():
+        print(f"  starea {value}: {count} celule")
+    return 0
+
+
 COMMANDS = {
     "run": run_command,
     "validate": validate_command,
+    "state-after": state_after_command,
+    "count": count_command,
 }
 
 
