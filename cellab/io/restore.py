@@ -9,6 +9,7 @@ import numpy as np
 from cellab.core.model import Automaton, State
 from cellab.io.load import _constant, _pairs
 from cellab.io.save import STATE_FORMAT_VERSION, _valid_size, _valid_states
+from cellab.io.rng import _restore_rng
 
 
 def _check(condition, message):
@@ -21,9 +22,11 @@ def _read_archive(cale):
         archive = np.load(cale, allow_pickle=False)
         _check(isinstance(archive, np.lib.npyio.NpzFile), "Format NPZ invalid.")
         with archive:
-            _check(len(archive.files) == 2 and set(archive.files) == {"grid", "metadata"},
+            names = set(archive.files)
+            _check(len(names) == len(archive.files) and {"grid", "metadata"} <= names
+                   and names <= {"grid", "metadata", "rng_state"},
                    "Campurile arhivei sunt invalide.")
-            return archive["grid"], archive["metadata"]
+            return archive["grid"], archive["metadata"], archive["rng_state"] if "rng_state" in names else None
     except FileNotFoundError:
         raise ValueError(f"Fisierul nu exista: {cale}") from None
     except OSError:
@@ -32,11 +35,12 @@ def _read_archive(cale):
         raise ValueError("Fisierul de stare este stricat sau nu este o arhiva NPZ valida.") from None
 
 
-def load_state(cale: str | Path, automaton: Automaton) -> State:
+def load_state(cale: str | Path, automaton: Automaton, rng: np.random.Generator | None = None) -> State:
+    _check(rng is None or isinstance(rng, np.random.Generator), "rng trebuie sa fie un generator NumPy.")
     _check(isinstance(automaton, Automaton), "Se asteapta un obiect Automaton.")
     _check(_valid_size(automaton.grid_size), "Dimensiunile automatului sunt invalide.")
     _check(_valid_states(automaton.states), "Lista de stari a automatului este invalida.")
-    grid, encoded = _read_archive(cale)
+    grid, encoded, rng_state = _read_archive(cale)
     _check(encoded.shape == () and encoded.dtype.kind == "U", "Metadatele trebuie sa fie un sir JSON scalar.")
     try:
         metadata = json.loads(encoded.item(), object_pairs_hook=_pairs, parse_constant=_constant)
@@ -70,4 +74,5 @@ def load_state(cale: str | Path, automaton: Automaton) -> State:
     same_states = states == automaton.states if numeric else set(states) == set(automaton.states)
     _check(same_states, "Starile declarate in fisier nu coincid cu starile automatului dat.")
     _check(states == ["number"] or np.isin(grid, states).all(), "Grila din fisier contine stari nedeclarate.")
+    _restore_rng(rng_state, rng)
     return State(grid=grid, generation=generation)

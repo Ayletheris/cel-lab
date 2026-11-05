@@ -8,7 +8,7 @@ state = load_initial_state(automaton)
 path = save_state(state, automaton, "saves/life/generation-0.npz")
 ```
 
-`save_state(state, automaton, cale, overwrite=False)` întoarce un `Path`.
+`save_state(state, automaton, cale, overwrite=False, rng=None)` întoarce un `Path`.
 Creează folderele părinte lipsă. Calea este folosită exact cum a fost dată;
 se recomandă extensia `.npz`, fără adăugarea automată a acesteia.
 
@@ -25,12 +25,14 @@ un alt proces creează fișierul înainte de deschidere.
 
 ## Conținutul fișierului
 
-Arhiva este produsă cu `np.savez_compressed` și conține exact două câmpuri:
+Arhiva este produsă cu `np.savez_compressed` și conține două câmpuri
+obligatorii și unul opțional:
 
 | Câmp | Conținut |
 |---|---|
 | `grid` | Matricea numerică, cu forma și tipul NumPy originale |
 | `metadata` | Șir JSON scalar, fără obiecte Python sau pickle |
+| `rng_state` | Opțional: șir JSON scalar cu `rng.bit_generator.state` |
 
 Metadatele au structura:
 
@@ -97,7 +99,7 @@ assert restored.generation == state.generation
 next_state = step(automaton, restored)
 ```
 
-`load_state(cale, automaton)` întoarce un `State`, fără modificarea automatului.
+`load_state(cale, automaton, rng=None)` întoarce un `State`, fără modificarea automatului.
 Grila păstrează tipul NumPy, forma și valorile originale; generația nu se
 resetează la 0. Arhiva se citește cu `allow_pickle=False` și este închisă
 înainte de întoarcerea rezultatului.
@@ -123,6 +125,48 @@ Versiunea 1, produsă înainte de cardul de restaurare, nu conținea aceste
 date și nu permite verificarea exactă a stărilor declarate; este refuzată
 explicit. Descrierea JSON a automatului rămâne la versiunea 1.
 
-Arhiva păstrează grila și generația, nu starea internă a generatorului RNG.
-Pentru reguli probabilistice, Rulare trebuie să gestioneze separat RNG-ul
-dacă dorește reproducerea exactă a unei rulări neîntrerupte.
+## Restaurarea generatorului aleator
+
+Pentru automate probabilistice, se transmite generatorul folosit la `step`
+și către salvare. Parametrul `rng` este opțional; apelurile existente rămân
+valabile. Extensia `rng_state` este opțională în versiunea 2, fără modificarea
+celorlalte câmpuri sau a versiunii arhivei.
+
+```python
+rng = np.random.default_rng(automaton.experiment.seed)
+state = load_initial_state(automaton)
+for _ in range(5):
+    state = step(automaton, state, rng)
+save_state(state, automaton, path, overwrite=True, rng=rng)
+
+restored_rng = np.random.default_rng()
+state = load_state(path, automaton, rng=restored_rng)
+for _ in range(5):
+    state = step(automaton, state, restored_rng)
+```
+
+Generatorul transmis la restaurare este modificat în loc: primește starea
+internă salvată, inclusiv bufferele și biții întregi rămași. Nu este recreat
+din seed. Trebuie să aibă același tip de `bit_generator` ca cel salvat;
+seedul cu care a fost construit înainte de restaurare nu contează.
+
+Sunt acceptate generatoarele NumPy `PCG64`, `PCG64DXSM`, `MT19937`, `Philox`
+și `SFC64`. Tipul și starea sunt păstrate ca JSON; tablourile din starea
+internă sunt serializate ca liste și reconstruite de setterul NumPy.
+Arhiva se citește în continuare fără pickle sau executarea de cod din fișier.
+
+Dacă `rng=None` la salvare, câmpul nu este adăugat. La restaurare, un fișier
+fără acest câmp poate fi citit fără RNG; dacă apelantul cere restaurarea
+unui RNG, primește eroare. Un fișier cu RNG poate fi citit și fără un generator
+destinație, pentru inspectarea grilei; atunci se validează snapshotul, fără
+a modifica vreun generator.
+
+Toate verificările arhivei, compatibilitatea automatului și validarea
+snapshotului într-un generator temporar preced modificarea RNG-ului primit.
+Un fișier invalid sau un tip de generator incompatibil lasă RNG-ul neschimbat.
+Salvarea nu avansează generatorul.
+
+Testul Forest Fire compară 10 pași neîntrerupți cu 5 pași, salvare,
+restaurare și încă 5 pași. Atât grila, cât și următoarele valori aleatoare
+sunt identice pentru fiecare dintre cele cinci generatoare. Pentru
+reproductibilitate se păstrează și aceeași versiune NumPy și aceleași reguli.

@@ -89,6 +89,10 @@ de citire cu NumPy sunt în [docs/design/saved-state.md](docs/design/saved-state
 dimensiunile, toate stările declarate și versiunea arhivei. Simularea poate
 continua direct cu `step(automaton, state)`.
 
+Pentru reguli probabilistice, transmite același generator la `step` și
+`save_state(..., rng=rng)`. La reluare, `load_state(cale, automaton, rng=rng)`
+restaurează și generatorul, pentru continuare identică rulării neîntrerupte.
+
 `apply_rules(grid, rules, kernel, boundary="fixed")` aplică regulile în ordine,
 pe grila veche. O regulă fără `condition` și fără `counts` este ramura „altfel”;
 fără nicio potrivire, celula își păstrează starea. Formatul vechi cu `neighbor_state` și

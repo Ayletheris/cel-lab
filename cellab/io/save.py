@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 
 from cellab.core.model import Automaton, Experiment, State
+from cellab.io.rng import _encode_rng
 
 
 STATE_FORMAT_VERSION = 2
@@ -21,7 +22,8 @@ def _valid_states(value):
                  all(type(v) is int for v in value) and len(set(value)) == len(value)))
 
 
-def save_state(state: State, automaton: Automaton, cale: str | Path, overwrite: bool = False) -> Path:
+def save_state(state: State, automaton: Automaton, cale: str | Path, overwrite: bool = False,
+               rng: np.random.Generator | None = None) -> Path:
     if not isinstance(state, State) or not isinstance(automaton, Automaton):
         raise ValueError("Se asteapta obiecte State si Automaton.")
     if type(overwrite) is not bool:
@@ -55,11 +57,14 @@ def save_state(state: State, automaton: Automaton, cale: str | Path, overwrite: 
         "seed": automaton.experiment.seed,
         "saved_at": datetime.now(timezone.utc).isoformat(),
     }
+    payload = {"grid": grid, "metadata": json.dumps(metadata, ensure_ascii=False)}
+    if rng is not None:
+        payload["rng_state"] = _encode_rng(rng)
     try:
         path = Path(cale)
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("wb" if overwrite else "xb") as file:
-            np.savez_compressed(file, grid=grid, metadata=json.dumps(metadata, ensure_ascii=False))
+            np.savez_compressed(file, **payload)
     except FileExistsError:
         raise FileExistsError(f"Fisierul exista deja: {cale}. Foloseste overwrite=True pentru suprascriere.") from None
     except OSError:
