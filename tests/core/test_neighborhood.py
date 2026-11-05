@@ -31,3 +31,8 @@ def test_one_dimensional_offsets():
 
 def test_one_dimensional_offsets_define_their_own_radius():
     np.testing.assert_array_equal(make_kernel([-2, 1]), [1, 0, 0, 1, 0])
+
+
+def test_empty_one_dimensional_offsets_are_refused():
+    with pytest.raises(ValueError):
+        make_kernel([])

@@ -15,6 +15,8 @@ class Automaton:
     states: list[Any]
     neighborhood: Any
     rules: Any
+    init: Any = None
+    experiment: Any = None
 
 
 @dataclass

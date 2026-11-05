@@ -26,6 +26,11 @@ def apply_rules(
     neighbor_state și counts rămâne valid. Fără condiție, este ramura «altfel».
     """
 
+    for rule in rules:
+        unknown = set(rule) - {"state", "condition", "neighbor_state", "counts", "next_state"}
+        if unknown or ("neighbor_state" in rule and "counts" not in rule):
+            raise ValueError(f"invalid rule {rule}: put the neighbor test inside 'condition'")
+
     result = grid.copy()
     matched = np.zeros(grid.shape, dtype=bool)
     neighbor_counts: dict[Any, np.ndarray] = {}

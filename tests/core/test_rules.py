@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from cellab.core.neighborhood import make_kernel
 from cellab.core.rules import apply_rules
@@ -57,3 +58,10 @@ def test_brians_brain_dying_cells_turn_off():
     grid = np.array([[2, 0, 0], [0, 1, 0], [0, 0, 0]])
     expected = np.array([[0, 0, 0], [0, 2, 0], [0, 0, 0]])
     np.testing.assert_array_equal(apply_rules(grid, BRAIN_RULES, KERNEL), expected)
+
+
+def test_rule_with_neighbor_test_outside_condition_is_refused():
+    grid = np.zeros((3, 3), dtype=np.uint8)
+    bad_rule = {"state": 0, "neighbor_state": 1, "at_least": 3, "next_state": 1}
+    with pytest.raises(ValueError):
+        apply_rules(grid, [bad_rule], KERNEL)

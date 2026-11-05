@@ -12,6 +12,8 @@ def make_kernel(neighborhood: str | Sequence[int], radius: int = 1) -> np.ndarra
         raise ValueError("radius must be at least 1")
 
     if not isinstance(neighborhood, str):
+        if len(neighborhood) == 0:
+            raise ValueError("1D offsets list is empty")
         if not all(isinstance(offset, int) for offset in neighborhood):
             raise ValueError("1D offsets must be integers")
         radius = max(radius, *(abs(offset) for offset in neighborhood))
