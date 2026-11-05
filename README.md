@@ -50,7 +50,7 @@ Daca vrei sa rulezi doar testele pt citire, stare si salvare:
 .venv\Scripts\python scripts/demo_l6.py
 ```
 
-Pentru Game of Life, Brian's Brain, Rule 30 si Forest Fire (cu probabilitati) arata:
+Pentru Game of Life, Brian's Brain si Forest Fire arata:
 descrierea din JSON, generatia curenta, generatia noua dupa reguli,
 salvarea, restaurarea si continuarea simularii.
 
