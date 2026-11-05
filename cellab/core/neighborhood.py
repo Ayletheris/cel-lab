@@ -11,16 +11,18 @@ def make_kernel(neighborhood: str | Sequence[int], radius: int = 1) -> np.ndarra
     if radius < 1:
         raise ValueError("radius must be at least 1")
 
-    width = 2 * radius + 1
     if not isinstance(neighborhood, str):
+        if not all(isinstance(offset, int) for offset in neighborhood):
+            raise ValueError("1D offsets must be integers")
+        radius = max(radius, *(abs(offset) for offset in neighborhood))
+        width = 2 * radius + 1
         kernel = np.zeros(width, dtype=int)
         for offset in neighborhood:
-            if not isinstance(offset, int) or abs(offset) > radius:
-                raise ValueError("1D offsets must be integers within the radius")
             if offset != 0:
                 kernel[radius + offset] = 1
         return kernel
 
+    width = 2 * radius + 1
     kind = neighborhood.lower().replace(" ", "_").replace("-", "_")
     if kind not in {"moore", "von_neumann"}:
         raise ValueError(f"unknown neighborhood: {neighborhood}")

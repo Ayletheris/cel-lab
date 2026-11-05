@@ -1,11 +1,13 @@
 """Numărarea simultană a vecinilor dintr-o anumită stare."""
 
+from typing import Any
+
 import numpy as np
 from scipy.signal import convolve2d
 
 
 def count_neighbors(
-    grid: np.ndarray, target_state: int, kernel: np.ndarray, boundary: str = "fixed"
+    grid: np.ndarray, target_state: Any, kernel: np.ndarray, boundary: str = "fixed"
 ) -> np.ndarray:
     """Numără pentru fiecare celulă vecinii în starea cerută."""
 

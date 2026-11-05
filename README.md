@@ -36,8 +36,8 @@ pip install pytest
 ## Folosire
 
 `apply_rules(grid, rules, kernel, boundary="fixed")` aplică regulile în ordine,
-pe grila veche. O regulă fără `condition` este ramura „altfel”; fără nicio
-potrivire, celula își păstrează starea. Formatul vechi cu `neighbor_state` și
+pe grila veche. O regulă fără `condition` și fără `counts` este ramura „altfel”;
+fără nicio potrivire, celula își păstrează starea. Formatul vechi cu `neighbor_state` și
 `counts` rămâne disponibil.
 
 Exemplu de regulă Voter: `{"condition": {"more_than": [1, 0]}, "next_state": 1}`.
