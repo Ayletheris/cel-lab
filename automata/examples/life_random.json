@@ -42,5 +42,12 @@
       "1": 30
     },
     "seed": 42
+  },
+  "experiment": {
+    "N": 100,
+    "seed": 42,
+    "save_intermediate": true,
+    "checkpoint_interval": 10,
+    "output_dir": "saves/life-random"
   }
 }

@@ -3,7 +3,7 @@ import json
 import math
 from pathlib import Path
 
-from cellab.core.model import Automaton
+from cellab.core.model import Automaton, Experiment
 from cellab.core.numeric import COMPARISONS, DIRECTIONS, FUNCTIONS, OPERATORS
 from cellab.io.defaults import DEFAULTS
 from cellab.io.generation import _prepare_generation
@@ -139,7 +139,7 @@ def _rules(rules, states, neighborhood, height):
     return result
 
 
-def load_automaton_from_text(text: str) -> Automaton:
+def load_automaton_from_text(text: str, *, experiment_overrides: dict | None = None) -> Automaton:
     _require(isinstance(text, str), "JSON: se asteapta text.")
     try:
         data = json.loads(text, object_pairs_hook=_pairs, parse_constant=_constant)
@@ -148,7 +148,7 @@ def load_automaton_from_text(text: str) -> Automaton:
     except ValueError as error:
         message = str(error)
         raise ValueError(message if message.startswith("JSON:") else "JSON invalid: numar prea mare.") from None
-    _object(data, {"version", "grid", "states", "neighborhood", "rules", "init"}, {"rules"}, "automat")
+    _object(data, {"version", "grid", "states", "neighborhood", "rules", "init", "experiment"}, {"rules"}, "automat")
     _integer(data.get("version", DEFAULTS["version"]), "version")
     _require(data.get("version", DEFAULTS["version"]) == 1, "version: este acceptata doar versiunea 1.")
     grid = data.get("grid", {})
@@ -195,16 +195,21 @@ def load_automaton_from_text(text: str) -> Automaton:
                 _require(value in states, f"{path}: stare nedeclarata.")
     conflicts = [problem for problem in validate(data) if "contrazice" in problem]
     _require(not conflicts, " ".join(conflicts))
+    experiment_config = data.get("experiment", {})
+    _require(isinstance(experiment_config, dict), "experiment trebuie sa fie un obiect.")
+    overrides = {} if experiment_overrides is None else experiment_overrides
+    _require(isinstance(overrides, dict), "experiment_overrides trebuie sa fie un obiect.")
+    experiment = Experiment.from_sources(experiment_config, **overrides)
     defaults_used = []
     for key in DEFAULTS:
         parent, separator, child = key.partition(".")
         if (separator and child not in data.get(parent, {})) or (not separator and key not in data):
             defaults_used.append(key)
     return Automaton([height, width], "toroidal" if boundary == "wrap" else "fixed",
-                     states, neighborhood, rules, init, defaults_used=defaults_used)
+                     states, neighborhood, rules, init, experiment=experiment, defaults_used=defaults_used)
 
 
-def load_automaton(cale: str | Path) -> Automaton:
+def load_automaton(cale: str | Path, *, experiment_overrides: dict | None = None) -> Automaton:
     try:
         text = Path(cale).read_text(encoding="utf-8-sig")
     except FileNotFoundError:
@@ -213,4 +218,4 @@ def load_automaton(cale: str | Path) -> Automaton:
         raise ValueError(f"Fisierul nu este text UTF-8: {cale}") from None
     except OSError:
         raise ValueError(f"Fisierul nu poate fi citit: {cale}") from None
-    return load_automaton_from_text(text)
+    return load_automaton_from_text(text, experiment_overrides=experiment_overrides)

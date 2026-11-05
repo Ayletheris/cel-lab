@@ -1,6 +1,7 @@
 import json
 
 from cellab.core.model import Automaton
+from cellab.core.experiment import experiment_problems
 from cellab.io.defaults import DEFAULTS
 from cellab.io.generation import _prepare_generation
 
@@ -215,4 +216,7 @@ def validate(automaton: Automaton | dict) -> list[str]:
             _prepare_generation(effective_size, states, data["init"])
         except ValueError as issue:
             error(str(issue))
+    if "experiment" in data:
+        for issue in experiment_problems(data["experiment"]):
+            error(issue)
     return problems

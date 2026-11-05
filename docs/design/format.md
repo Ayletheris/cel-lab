@@ -3,7 +3,7 @@
 Acesta este contractul pentru fișierele de automate și pentru ieșirea parserului
 de limbaj natural (Livrabil 4). Schema este în
 [`schemas/automaton.schema.json`](../../schemas/automaton.schema.json), în dialectul
-JSON Schema 2020-12. Toate câmpurile de mai jos sunt obligatorii în forma
+JSON Schema 2020-12. Câmpurile de mai jos, exceptând `experiment`, sunt obligatorii în forma
 completă validată de schemă. Încărcătorul completează câmpurile absente conform
 secțiunii de mai jos. Nu se acceptă câmpuri suplimentare sau aliasuri.
 
@@ -15,6 +15,7 @@ secțiunii de mai jos. Nu se acceptă câmpuri suplimentare sau aliasuri.
 | `neighborhood` | `type`: `moore` sau `von_neumann`; `radius`: întreg pozitiv. |
 | `rules` | Listă nevidă de reguli de același tip: `count`, `table` sau `numeric`. |
 | `init` | Matrice completă sau obiect de generare: `random`, `center`, `pattern`, `empty`. |
+| `experiment` | Opțional: `N`, `seed`, `save_intermediate`, `checkpoint_interval`, `output_dir`. |
 
 ## Grila și vecinătatea
 
@@ -245,6 +246,10 @@ parametru lipsă; validatorul raportează valoarea implicită, fără să o scri
 în obiect. Încărcătorul rămâne strict și respinge `null` în fișier.
 
 ## Stabilitate și acordul echipei
+
+Cardul „Parametrii experimentului” adaugă obiectul opțional `experiment`.
+Lipsa lui păstrează compatibilitatea exemplelor existente. Contractul și
+prioritatea surselor sunt în [experiment.md](experiment.md).
 
 Cardul „Stare inițială generată după reguli” adaugă în versiunea 1 obiectele
 de generare pentru `init`, fără să schimbe forma sau sensul matricelor

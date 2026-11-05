@@ -68,6 +68,18 @@ centrală, un tipar plasat la coordonate sau o grilă goală. Se folosește acel
 [docs/design/generated-state.md](docs/design/generated-state.md) și exemplele
 `life_random.json`, `rule30_center.json`, `life_glider.json`, `life_empty.json`.
 
+`automaton.experiment` este un `Experiment`, cu valori implicite `N=100`,
+`seed=0`, `save_intermediate=True`, `checkpoint_interval=10`, `output_dir="saves"`.
+Configurația poate veni din câmpul JSON `experiment`, din cod sau din CLI;
+valorile explicite suprascriu fișierul. Exemplu:
+
+```powershell
+python -m cellab.cli automata/examples/life_random.json --generations 200 --seed 7 --no-save-intermediate
+```
+
+Comanda afișează configurația rezolvată. API-ul pentru Rulare și exemplele
+sunt în [docs/design/experiment.md](docs/design/experiment.md).
+
 `apply_rules(grid, rules, kernel, boundary="fixed")` aplică regulile în ordine,
 pe grila veche. O regulă fără `condition` și fără `counts` este ramura „altfel”;
 fără nicio potrivire, celula își păstrează starea. Formatul vechi cu `neighbor_state` și

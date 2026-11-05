@@ -5,6 +5,8 @@ from typing import Any
 
 import numpy as np
 
+from cellab.core.experiment import Experiment
+
 
 @dataclass
 class Automaton:
@@ -16,7 +18,7 @@ class Automaton:
     neighborhood: Any
     rules: Any
     init: Any = None
-    experiment: Any = None
+    experiment: Experiment = field(default_factory=Experiment)
     defaults_used: list[str] = field(default_factory=list, repr=False, compare=False)
 
 
