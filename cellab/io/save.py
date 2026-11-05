@@ -7,7 +7,18 @@ import numpy as np
 from cellab.core.model import Automaton, Experiment, State
 
 
-STATE_FORMAT_VERSION = 1
+STATE_FORMAT_VERSION = 2
+
+
+def _valid_size(value):
+    return (isinstance(value, (list, tuple)) and len(value) == 2
+            and all(type(v) is int and v > 0 for v in value))
+
+
+def _valid_states(value):
+    return (isinstance(value, list) and bool(value)
+            and (value == ["number"] or
+                 all(type(v) is int for v in value) and len(set(value)) == len(value)))
 
 
 def save_state(state: State, automaton: Automaton, cale: str | Path, overwrite: bool = False) -> Path:
@@ -17,6 +28,10 @@ def save_state(state: State, automaton: Automaton, cale: str | Path, overwrite: 
         raise ValueError("overwrite trebuie sa fie true sau false.")
     if type(state.generation) is not int or state.generation < 0:
         raise ValueError("Generatia trebuie sa fie un intreg nenegativ.")
+    if not _valid_size(automaton.grid_size):
+        raise ValueError("Dimensiunile automatului sunt invalide.")
+    if not _valid_states(automaton.states):
+        raise ValueError("Lista de stari a automatului este invalida.")
     grid = state.grid
     if not isinstance(grid, np.ndarray) or grid.dtype.kind not in "iuf":
         raise ValueError("Grila trebuie sa fie o matrice NumPy numerica.")
@@ -35,6 +50,8 @@ def save_state(state: State, automaton: Automaton, cale: str | Path, overwrite: 
         "format_version": STATE_FORMAT_VERSION,
         "generation": state.generation,
         "automaton_name": automaton.name,
+        "grid_size": list(automaton.grid_size),
+        "states": automaton.states,
         "seed": automaton.experiment.seed,
         "saved_at": datetime.now(timezone.utc).isoformat(),
     }

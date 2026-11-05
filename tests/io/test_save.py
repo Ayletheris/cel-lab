@@ -27,7 +27,9 @@ def test_archive_contains_compressed_grid_and_json_metadata(tmp_path):
     assert metadata["generation"] == 12
     assert metadata["automaton_name"] == "Game of Life"
     assert metadata["seed"] == 17
-    assert metadata["format_version"] == 1
+    assert metadata["format_version"] == 2
+    assert metadata["grid_size"] == automaton.grid_size
+    assert metadata["states"] == automaton.states
     saved_at = datetime.fromisoformat(metadata["saved_at"])
     assert before <= saved_at <= after
     assert saved_at.utcoffset().total_seconds() == 0

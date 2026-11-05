@@ -85,6 +85,10 @@ salvează grila comprimată și metadatele JSON într-un singur fișier `.npz`.
 Creează folderele lipsă și refuză suprascrierea implicit. Formatul și exemplul
 de citire cu NumPy sunt în [docs/design/saved-state.md](docs/design/saved-state.md).
 
+`load_state(cale, automaton)` restaurează grila și generația, verificând
+dimensiunile, toate stările declarate și versiunea arhivei. Simularea poate
+continua direct cu `step(automaton, state)`.
+
 `apply_rules(grid, rules, kernel, boundary="fixed")` aplică regulile în ordine,
 pe grila veche. O regulă fără `condition` și fără `counts` este ramura „altfel”;
 fără nicio potrivire, celula își păstrează starea. Formatul vechi cu `neighbor_state` și

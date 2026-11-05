@@ -36,9 +36,11 @@ Metadatele au structura:
 
 ```json
 {
-  "format_version": 1,
+  "format_version": 2,
   "generation": 0,
   "automaton_name": "Game of Life",
+  "grid_size": [5, 5],
+  "states": [0, 1],
   "seed": 0,
   "saved_at": "2026-11-05T12:00:00+00:00"
 }
@@ -48,6 +50,8 @@ Metadatele au structura:
 iar `seed` din `Automaton.experiment.seed`. `saved_at` este momentul salvării
 în UTC, în format ISO 8601 cu fus orar. `format_version` descrie formatul
 arhivei de stare, separat de versiunea descrierii JSON a automatului.
+`grid_size` conține `[height, width]`, iar `states` lista completă a stărilor
+declarate, inclusiv cele care nu apar în grila salvată.
 
 Descrierea automatului poate include câmpul opțional `name`, de exemplu
 `"name": "Game of Life"`. În lipsa lui se folosește `"automaton"`.
@@ -80,3 +84,45 @@ Intrările invalide produc `ValueError` înainte de scriere. Erorile de acces
 la disc produc un mesaj scurt în română; fișierul existent fără permisiune
 de suprascriere produce `FileExistsError`. Salvarea nu modifică starea sau
 parametrii automatului.
+
+## Restaurarea și continuarea simulării
+
+```python
+from cellab.core.step import step
+from cellab.io import load_state
+
+restored = load_state(path, automaton)
+assert np.array_equal(restored.grid, state.grid)
+assert restored.generation == state.generation
+next_state = step(automaton, restored)
+```
+
+`load_state(cale, automaton)` întoarce un `State`, fără modificarea automatului.
+Grila păstrează tipul NumPy, forma și valorile originale; generația nu se
+resetează la 0. Arhiva se citește cu `allow_pickle=False` și este închisă
+înainte de întoarcerea rezultatului.
+
+Se verifică versiunea, câmpurile și tipurile metadatelor, data cu fus orar,
+forma reală a grilei, valorile finite și apartenența lor la stările declarate.
+Dimensiunile și lista completă de stări trebuie să corespundă automatului
+primit. Ordinea listei de stări discrete poate fi diferită. Numele și seedul
+sunt metadate informative; restaurarea nu modifică parametrii experimentului
+și nu compară regulile sau numele automatelor.
+
+Un exemplu de eroare pentru dimensiuni incompatibile este:
+`Fisierul este pentru un automat de 30x30; automatul dat are 50x50.`
+Mesajele afișează lățimea înaintea înălțimii. Stările declarate suplimentare
+sunt refuzate chiar dacă grila conține exclusiv 0. Domeniul continuu
+`["number"]` nu este compatibil cu o listă discretă de stări.
+
+Fișierele lipsă, corupte, cu metadate incomplete sau versiune nesuportată
+produc `ValueError` cu mesaje scurte în română.
+
+Versiunea 2 adaugă dimensiunile și lista completă a stărilor în metadate.
+Versiunea 1, produsă înainte de cardul de restaurare, nu conținea aceste
+date și nu permite verificarea exactă a stărilor declarate; este refuzată
+explicit. Descrierea JSON a automatului rămâne la versiunea 1.
+
+Arhiva păstrează grila și generația, nu starea internă a generatorului RNG.
+Pentru reguli probabilistice, Rulare trebuie să gestioneze separat RNG-ul
+dacă dorește reproducerea exactă a unei rulări neîntrerupte.
