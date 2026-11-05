@@ -35,4 +35,22 @@ pip install pytest
 
 ## Folosire
 
-De completat.
+`apply_rules(grid, rules, kernel, boundary="fixed")` aplică regulile în ordine,
+pe grila veche. O regulă fără `condition` este ramura „altfel”; fără nicio
+potrivire, celula își păstrează starea. Formatul vechi cu `neighbor_state` și
+`counts` rămâne disponibil.
+
+Exemplu de regulă Voter: `{"condition": {"more_than": [1, 0]}, "next_state": 1}`.
+În `condition` se pot folosi `all` / `any` cu liste de condiții, ori o
+numărătoare ca `{"neighbor_state": 1, "at_least": 2}`. Sunt acceptate și
+`at_most`, `exact` și `between: [min, max]` (capete incluse).
+
+Pentru Cyclic cu trei stări:
+
+```json
+{"condition": {"neighbor_state": {"next_mod": 3}, "at_least": 2}, "next_state": {"next_mod": 3}}
+```
+
+Expresia `next_mod` înseamnă
+`(starea_curentă + 1) % k` și poate apărea atât la starea vecinilor, cât și la
+starea următoare. Stările Cyclic sunt întregi de la `0` la `k - 1`.
