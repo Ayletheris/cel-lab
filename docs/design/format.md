@@ -3,12 +3,13 @@
 Acesta este contractul pentru fișierele de automate și pentru ieșirea parserului
 de limbaj natural (Livrabil 4). Schema este în
 [`schemas/automaton.schema.json`](../../schemas/automaton.schema.json), în dialectul
-JSON Schema 2020-12. Câmpurile de mai jos, exceptând `experiment`, sunt obligatorii în forma
+JSON Schema 2020-12. Câmpurile de mai jos, exceptând `name` și `experiment`, sunt obligatorii în forma
 completă validată de schemă. Încărcătorul completează câmpurile absente conform
 secțiunii de mai jos. Nu se acceptă câmpuri suplimentare sau aliasuri.
 
 | Câmp | Semnificație |
 |---|---|
+| `name` | Opțional: numele automatului, text nevid; implicit `"automaton"`. |
 | `version` | Întregul `1`. O schimbare incompatibilă cere o versiune nouă. |
 | `grid` | `width`, `height`: întregi pozitivi; `boundary`: `fixed` sau `wrap`. |
 | `states` | Lista valorilor întregi distincte pentru un automat discret; exact `["number"]` pentru un domeniu numeric continuu. |
@@ -246,6 +247,9 @@ parametru lipsă; validatorul raportează valoarea implicită, fără să o scri
 în obiect. Încărcătorul rămâne strict și respinge `null` în fișier.
 
 ## Stabilitate și acordul echipei
+
+Cardul „Salvarea unei stări” adaugă câmpul opțional `name`, folosit în
+metadatele salvărilor. Contractul arhivei este în [saved-state.md](saved-state.md).
 
 Cardul „Parametrii experimentului” adaugă obiectul opțional `experiment`.
 Lipsa lui păstrează compatibilitatea exemplelor existente. Contractul și

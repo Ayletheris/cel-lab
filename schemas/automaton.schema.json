@@ -5,6 +5,7 @@
   "additionalProperties": false,
   "required": ["version", "grid", "states", "neighborhood", "rules", "init"],
   "properties": {
+    "name": {"type": "string", "minLength": 1, "pattern": "\\S", "default": "automaton"},
     "version": {"const": 1},
     "grid": {
       "type": "object",

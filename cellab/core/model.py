@@ -20,6 +20,7 @@ class Automaton:
     init: Any = None
     experiment: Experiment = field(default_factory=Experiment)
     defaults_used: list[str] = field(default_factory=list, repr=False, compare=False)
+    name: str = "automaton"
 
 
 @dataclass

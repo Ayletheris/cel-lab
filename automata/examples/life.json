@@ -1,4 +1,5 @@
 {
+  "name": "Game of Life",
   "version": 1,
   "grid": {
     "width": 5,

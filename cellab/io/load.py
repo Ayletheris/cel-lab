@@ -148,7 +148,9 @@ def load_automaton_from_text(text: str, *, experiment_overrides: dict | None = N
     except ValueError as error:
         message = str(error)
         raise ValueError(message if message.startswith("JSON:") else "JSON invalid: numar prea mare.") from None
-    _object(data, {"version", "grid", "states", "neighborhood", "rules", "init", "experiment"}, {"rules"}, "automat")
+    _object(data, {"version", "grid", "states", "neighborhood", "rules", "init", "experiment", "name"}, {"rules"}, "automat")
+    name = data.get("name", "automaton")
+    _require(isinstance(name, str) and bool(name.strip()), "name trebuie sa fie un text nevid.")
     _integer(data.get("version", DEFAULTS["version"]), "version")
     _require(data.get("version", DEFAULTS["version"]) == 1, "version: este acceptata doar versiunea 1.")
     grid = data.get("grid", {})
@@ -206,7 +208,7 @@ def load_automaton_from_text(text: str, *, experiment_overrides: dict | None = N
         if (separator and child not in data.get(parent, {})) or (not separator and key not in data):
             defaults_used.append(key)
     return Automaton([height, width], "toroidal" if boundary == "wrap" else "fixed",
-                     states, neighborhood, rules, init, experiment=experiment, defaults_used=defaults_used)
+                     states, neighborhood, rules, init, experiment=experiment, defaults_used=defaults_used, name=name)
 
 
 def load_automaton(cale: str | Path, *, experiment_overrides: dict | None = None) -> Automaton:

@@ -219,4 +219,6 @@ def validate(automaton: Automaton | dict) -> list[str]:
     if "experiment" in data:
         for issue in experiment_problems(data["experiment"]):
             error(issue)
+    if "name" in data and (not isinstance(data["name"], str) or not data["name"].strip()):
+        error("name trebuie sa fie un text nevid.")
     return problems

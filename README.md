@@ -80,6 +80,11 @@ python -m cellab.cli automata/examples/life_random.json --generations 200 --seed
 Comanda afișează configurația rezolvată. API-ul pentru Rulare și exemplele
 sunt în [docs/design/experiment.md](docs/design/experiment.md).
 
+`save_state(state, automaton, cale, overwrite=False)`, din `cellab.io`,
+salvează grila comprimată și metadatele JSON într-un singur fișier `.npz`.
+Creează folderele lipsă și refuză suprascrierea implicit. Formatul și exemplul
+de citire cu NumPy sunt în [docs/design/saved-state.md](docs/design/saved-state.md).
+
 `apply_rules(grid, rules, kernel, boundary="fixed")` aplică regulile în ordine,
 pe grila veche. O regulă fără `condition` și fără `counts` este ramura „altfel”;
 fără nicio potrivire, celula își păstrează starea. Formatul vechi cu `neighbor_state` și
