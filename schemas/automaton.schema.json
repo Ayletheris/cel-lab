@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CelLab automaton v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "grid", "states", "neighborhood", "rules", "init"],
+  "properties": {
+    "version": {"const": 1},
+    "grid": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height", "boundary"],
+      "properties": {
+        "width": {"type": "integer", "minimum": 1},
+        "height": {"type": "integer", "minimum": 1},
+        "boundary": {"enum": ["fixed", "wrap"]}
+      }
+    },
+    "states": {
+      "oneOf": [
+        {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer"}},
+        {"const": ["number"]}
+      ]
+    },
+    "neighborhood": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "radius"],
+      "properties": {
+        "type": {"enum": ["moore", "von_neumann"]},
+        "radius": {"type": "integer", "minimum": 1}
+      }
+    },
+    "rules": {"type": "array", "minItems": 1},
+    "init": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "array", "minItems": 1, "items": {"type": "number"}}
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "states": {"items": {"type": "integer"}},
+        "init": {"items": {"items": {"type": "integer"}}},
+        "rules": {"items": {"$ref": "#/$defs/countRule"}}
+      }
+    },
+    {
+      "properties": {
+        "states": {"const": [0, 1]},
+        "grid": {"properties": {"height": {"const": 1}}},
+        "neighborhood": {"properties": {"type": {"const": "moore"}, "radius": {"const": 1}}},
+        "init": {"items": {"items": {"enum": [0, 1]}}},
+        "rules": {"maxItems": 1, "items": {"$ref": "#/$defs/tableRule"}}
+      }
+    },
+    {
+      "properties": {
+        "states": {"const": ["number"]},
+        "neighborhood": {"properties": {"radius": {"const": 1}}},
+        "rules": {"maxItems": 1, "items": {"$ref": "#/$defs/numericRule"}}
+      }
+    }
+  ],
+  "$defs": {
+    "countRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "from", "to"],
+      "properties": {
+        "type": {"const": "count"},
+        "from": {"type": "integer"},
+        "count": {"type": "integer"},
+        "in": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+        "to": {"type": "integer"},
+        "otherwise": {"type": "integer"}
+      },
+      "dependentRequired": {
+        "count": ["in", "otherwise"],
+        "in": ["count", "otherwise"],
+        "otherwise": ["count", "in"]
+      }
+    },
+    "tableRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "table"],
+      "properties": {
+        "type": {"const": "table"},
+        "table": {
+          "type": "object",
+          "required": ["111", "110", "101", "100", "011", "010", "001", "000"],
+          "propertyNames": {"pattern": "^[01]{3}$"},
+          "additionalProperties": {"enum": [0, 1]}
+        }
+      }
+    },
+    "numericRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "expression"],
+      "properties": {
+        "type": {"const": "numeric"},
+        "expression": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}
