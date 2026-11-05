@@ -1,0 +1,9 @@
+[project]
+name = "cellab"
+version = "0.1.0"
+description = "Simulator generic de automate celulare"
+requires-python = ">=3.10"
+dependencies = ["numpy", "scipy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

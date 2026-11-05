@@ -7,3 +7,7 @@ venv/
 *.egg-info/
 .pytest_cache/
 saves/
+data/datasets/*
+!data/datasets/.gitkeep
+*.pt
+*.pth
