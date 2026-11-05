@@ -38,14 +38,11 @@ pip install pytest
 Încărcare din fișier sau text JSON:
 
 ```python
-import numpy as np
-
-from cellab.core.model import State
 from cellab.core.step import step
-from cellab.io import load_automaton, load_automaton_from_text
+from cellab.io import load_automaton, load_initial_state
 
 automaton = load_automaton("automata/examples/life.json")
-state = step(automaton, State(np.array(automaton.init)))
+state = step(automaton, load_initial_state(automaton))
 ```
 
 `load_automaton_from_text(text)` întoarce același tip de obiect. Ambele funcții
@@ -57,6 +54,12 @@ unui dicționar JSON. `validate(automaton)` întoarce toate problemele într-o
 listă de mesaje `Eroare:` / `Avertisment:`; pentru o descriere completă și
 corectă întoarce `[]`. Valorile implicite sunt 50×50, margine wrap și Moore
 cu raza 1; folosirea lor este raportată prin avertismente.
+
+`load_initial_state(automaton, source)` acceptă o matrice, text cu `.` / `#`
+sau un `Path`. Fără `source`, folosește `automaton.init`. Pentru o cale ca
+text există `load_initial_state_from_file(automaton, cale)`. Rezultatul este
+un `State` la generația 0, cu dimensiunile și stările verificate.
+Exemplele sunt în [docs/design/initial-state.md](docs/design/initial-state.md).
 
 `apply_rules(grid, rules, kernel, boundary="fixed")` aplică regulile în ordine,
 pe grila veche. O regulă fără `condition` și fără `counts` este ramura „altfel”;
