@@ -19,6 +19,7 @@ def apply_rules(
     rules: Sequence[dict[str, Any]],
     kernel: np.ndarray,
     boundary: str = "fixed",
+    rng: np.random.Generator | None = None,
 ) -> np.ndarray:
     """Aplică prima regulă potrivită; fără potrivire, celula rămâne la fel.
 
@@ -27,9 +28,15 @@ def apply_rules(
     """
 
     for rule in rules:
-        unknown = set(rule) - {"state", "condition", "neighbor_state", "counts", "next_state"}
+        unknown = set(rule) - {"state", "condition", "neighbor_state", "counts", "next_state", "prob"}
         if unknown or ("neighbor_state" in rule and "counts" not in rule):
             raise ValueError(f"invalid rule {rule}: put the neighbor test inside 'condition'")
+        # prob = sansa (0..1) ca regula sa se aplice; are nevoie de rng (generator cu seed)
+        if "prob" in rule:
+            if not 0 <= rule["prob"] <= 1:
+                raise ValueError(f"prob must be between 0 and 1: {rule}")
+            if rng is None:
+                raise ValueError("rule with prob needs an rng (np.random.default_rng(seed))")
 
     result = grid.copy()
     matched = np.zeros(grid.shape, dtype=bool)
@@ -77,6 +84,10 @@ def apply_rules(
             mask = mask & matches(rule["condition"])
         elif "counts" in rule:
             mask = mask & matches(rule)
+        # tragem un nr random per celula (mereu pe toata grila, ca sa fie reproductibil)
+        # daca nu iese sansa, celula merge mai departe la urm. regula
+        if "prob" in rule:
+            mask = mask & (rng.random(grid.shape) < rule["prob"])
         next_state = _state_value(rule["next_state"], grid)
         result[mask] = next_state[mask] if isinstance(next_state, np.ndarray) else next_state
         matched |= mask
