@@ -93,6 +93,13 @@ Pentru reguli probabilistice, transmite același generator la `step` și
 `save_state(..., rng=rng)`. La reluare, `load_state(cale, automaton, rng=rng)`
 restaurează și generatorul, pentru continuare identică rulării neîntrerupte.
 
+`GenerationStore(experiment, automaton=None, mode="checkpoint", rng=None)`
+păstrează generațiile prin `add(state)`, `get(t)`, `count()` și `last()`.
+Modurile sunt `memory` (toate), `checkpoint` (intervalul experimentului) și
+`disk` (același interval, în fișiere NPZ). Cu intermediarele dezactivate
+păstrează doar prima și ultima generație. Vezi
+[docs/design/generation-store.md](docs/design/generation-store.md).
+
 `apply_rules(grid, rules, kernel, boundary="fixed")` aplică regulile în ordine,
 pe grila veche. O regulă fără `condition` și fără `counts` este ramura „altfel”;
 fără nicio potrivire, celula își păstrează starea. Formatul vechi cu `neighbor_state` și

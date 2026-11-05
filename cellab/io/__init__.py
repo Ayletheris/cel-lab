@@ -3,6 +3,7 @@ from cellab.io.initial_state import load_initial_state, load_initial_state_from_
 from cellab.io.load import load_automaton, load_automaton_from_text
 from cellab.io.restore import load_state
 from cellab.io.save import save_state
+from cellab.io.store import GenerationStore
 from cellab.io.validate import validate
 
 __all__ = [
@@ -11,4 +12,5 @@ __all__ = [
     "generate_initial_state",
     "save_state",
     "load_state",
+    "GenerationStore",
 ]
