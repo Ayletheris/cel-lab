@@ -6,6 +6,7 @@ from pathlib import Path
 from cellab.core.model import Automaton
 from cellab.core.numeric import COMPARISONS, DIRECTIONS, FUNCTIONS, OPERATORS
 from cellab.io.defaults import DEFAULTS
+from cellab.io.generation import _prepare_generation
 from cellab.io.validate import validate
 
 
@@ -174,8 +175,11 @@ def load_automaton_from_text(text: str) -> Automaton:
     _integer(neighborhood["radius"], "neighborhood.radius", 1)
     rules = _rules(data["rules"], states, neighborhood, height)
     init = data["init"] if "init" in data else [[0] * width for _ in range(height)]
-    _require(isinstance(init, list) and len(init) == height, "init: numar de randuri diferit de grid.height.")
-    for y, row in enumerate(init):
+    if isinstance(init, dict):
+        _prepare_generation([height, width], states, init)
+    else:
+        _require(isinstance(init, list) and len(init) == height, "init: numar de randuri diferit de grid.height.")
+    for y, row in enumerate(init if isinstance(init, list) else []):
         _require(isinstance(row, list) and len(row) == width, f"init[{y}]: lungime diferita de grid.width.")
         for x, value in enumerate(row):
             path = f"init[{y}][{x}]"

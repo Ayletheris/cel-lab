@@ -76,5 +76,7 @@ sau `Path`, astfel încât interpretarea să nu depindă de fișierele existente
 Toate erorile de intrare sunt `ValueError` cu mesaje scurte în română:
 dimensiuni nepotrivite, stare nedeclarată, caracter necunoscut, valoare
 nenumerică/nefinită, fișier absent sau imposibil de citit și JSON invalid.
-Încărcătorul de automate păstrează contractul JSON v1: `init` rămâne o matrice;
-textul și fișierele externe se încarcă prin funcțiile de stare inițială.
+`init` acceptă atât matricea explicită, cât și un obiect de generare conform
+[generated-state.md](generated-state.md). Textul și fișierele externe se
+încarcă prin funcțiile de stare inițială. Un dicționar transmis direct la
+`load_initial_state` este interpretat ca obiect de generare.

@@ -2,6 +2,7 @@ import json
 
 from cellab.core.model import Automaton
 from cellab.io.defaults import DEFAULTS
+from cellab.io.generation import _prepare_generation
 
 
 def _canonical(value, key=""):
@@ -205,4 +206,13 @@ def validate(automaton: Automaton | dict) -> list[str]:
         for state in states:
             if state not in covered:
                 warning(f"starea {state} nu are nicio regula; va ramane la fel.")
+    if isinstance(data.get("init"), dict):
+        effective_size = size
+        if isinstance(size, (list, tuple)) and len(size) == 2:
+            effective_size = [DEFAULTS[key] if value is None else value
+                              for key, value in zip(("grid.height", "grid.width"), size)]
+        try:
+            _prepare_generation(effective_size, states, data["init"])
+        except ValueError as issue:
+            error(str(issue))
     return problems

@@ -5,4 +5,6 @@ from cellab.io.validate import validate
 __all__ = [
     "load_automaton", "load_automaton_from_text", "validate",
     "load_initial_state", "load_initial_state_from_file",
+    "generate_initial_state",
 ]
+from cellab.io.generation import generate_initial_state

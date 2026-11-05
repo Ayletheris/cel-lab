@@ -32,11 +32,7 @@
       }
     },
     "rules": {"type": "array", "minItems": 1},
-    "init": {
-      "type": "array",
-      "minItems": 1,
-      "items": {"type": "array", "minItems": 1, "items": {"type": "number"}}
-    }
+    "init": {"oneOf": [{"$ref": "#/$defs/matrix"}, {"$ref": "#/$defs/generatedInit"}]}
   },
   "oneOf": [
     {
@@ -64,6 +60,67 @@
     }
   ],
   "$defs": {
+    "matrix": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "array", "minItems": 1, "items": {"type": "number"}}
+    },
+    "generatedInit": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "percentages"],
+          "properties": {
+            "type": {"const": "random"},
+            "seed": {"type": "integer", "minimum": 0, "default": 0},
+            "percentages": {
+              "type": "object",
+              "propertyNames": {"pattern": "^(0|-[1-9][0-9]*|[1-9][0-9]*)$"},
+              "additionalProperties": {"type": "number", "minimum": 0, "maximum": 100}
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": {"const": "empty"},
+            "background": {"type": "number"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": {"const": "center"},
+            "background": {"type": "number"},
+            "state": {"type": "number"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "pattern", "position"],
+          "properties": {
+            "type": {"const": "pattern"},
+            "background": {"type": "number"},
+            "pattern": {"oneOf": [{"$ref": "#/$defs/matrix"}, {"type": "string", "minLength": 1}]},
+            "position": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["x", "y"],
+              "properties": {
+                "x": {"type": "integer", "minimum": 0},
+                "y": {"type": "integer", "minimum": 0}
+              }
+            }
+          }
+        }
+      ]
+    },
     "countRule": {
       "type": "object",
       "additionalProperties": false,

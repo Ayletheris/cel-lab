@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 
 from cellab.core.model import Automaton, State
+from cellab.io.generation import generate_initial_state
 
 
 def load_initial_state(automaton: Automaton, source=None, symbols=None) -> State:
@@ -24,6 +25,8 @@ def load_initial_state(automaton: Automaton, source=None, symbols=None) -> State
         source = automaton.init
     if source is None:
         raise ValueError("Starea initiala lipseste.")
+    if isinstance(source, dict):
+        return generate_initial_state(automaton, source)
     if isinstance(source, Path):
         return load_initial_state_from_file(automaton, source, symbols)
     if isinstance(source, str):

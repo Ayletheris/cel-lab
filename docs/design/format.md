@@ -14,7 +14,7 @@ secțiunii de mai jos. Nu se acceptă câmpuri suplimentare sau aliasuri.
 | `states` | Lista valorilor întregi distincte pentru un automat discret; exact `["number"]` pentru un domeniu numeric continuu. |
 | `neighborhood` | `type`: `moore` sau `von_neumann`; `radius`: întreg pozitiv. |
 | `rules` | Listă nevidă de reguli de același tip: `count`, `table` sau `numeric`. |
-| `init` | Matrice completă: `height` rânduri a câte `width` valori. |
+| `init` | Matrice completă sau obiect de generare: `random`, `center`, `pattern`, `empty`. |
 
 ## Grila și vecinătatea
 
@@ -181,8 +181,9 @@ automaton = load_automaton("automata/examples/life.json")
 automaton = load_automaton_from_text('{"rules": [{"type": "count", "from": 0, "to": 1}]}')
 ```
 
-Ambele funcții întorc un `Automaton` compatibil cu `step`. `init` rămâne o
-matrice de liste; simularea poate începe cu `State(np.array(automaton.init))`.
+Ambele funcții întorc un `Automaton` compatibil cu `step`. `init` păstrează
+matricea sau obiectul de generare; simularea începe cu
+`load_initial_state(automaton)`, importată din `cellab.io`.
 Fișierele sunt citite în UTF-8, cu sau fără BOM. Erorile de citire, sintaxă
 sau descriere sunt `ValueError`, cu mesaje scurte în română. Apelantul poate
 afișa `str(error)` fără traceback. Pentru JSON invalid se indică linia și coloana.
@@ -244,6 +245,12 @@ parametru lipsă; validatorul raportează valoarea implicită, fără să o scri
 în obiect. Încărcătorul rămâne strict și respinge `null` în fișier.
 
 ## Stabilitate și acordul echipei
+
+Cardul „Stare inițială generată după reguli” adaugă în versiunea 1 obiectele
+de generare pentru `init`, fără să schimbe forma sau sensul matricelor
+existente. Structura este în schema formală, iar semantica și exemplele sunt
+în [generated-state.md](generated-state.md). Parserul NL produce aceeași
+structură, fără aliasuri sau instrucțiuni de executat ca text.
 
 Versiunea 1 fixează numele, tipurile și semantica de mai sus. Parserul NL
 trebuie să producă exact acest contract și să semnaleze cererile care nu pot

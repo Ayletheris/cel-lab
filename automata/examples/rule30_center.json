@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "grid": {
+    "width": 101,
+    "height": 1,
+    "boundary": "fixed"
+  },
+  "states": [
+    0,
+    1
+  ],
+  "neighborhood": {
+    "type": "moore",
+    "radius": 1
+  },
+  "rules": [
+    {
+      "type": "table",
+      "table": {
+        "111": 0,
+        "110": 0,
+        "101": 0,
+        "100": 1,
+        "011": 1,
+        "010": 1,
+        "001": 1,
+        "000": 0
+      }
+    }
+  ],
+  "init": {
+    "type": "center",
+    "state": 1
+  }
+}

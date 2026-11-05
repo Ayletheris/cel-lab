@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "grid": {
+    "width": 100,
+    "height": 100,
+    "boundary": "fixed"
+  },
+  "states": [
+    0,
+    1
+  ],
+  "neighborhood": {
+    "type": "moore",
+    "radius": 1
+  },
+  "rules": [
+    {
+      "type": "count",
+      "from": 1,
+      "count": 1,
+      "in": [
+        2,
+        3
+      ],
+      "to": 1,
+      "otherwise": 0
+    },
+    {
+      "type": "count",
+      "from": 0,
+      "count": 1,
+      "in": [
+        3
+      ],
+      "to": 1,
+      "otherwise": 0
+    }
+  ],
+  "init": {
+    "type": "random",
+    "percentages": {
+      "1": 30
+    },
+    "seed": 42
+  }
+}

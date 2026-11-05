@@ -61,6 +61,13 @@ text există `load_initial_state_from_file(automaton, cale)`. Rezultatul este
 un `State` la generația 0, cu dimensiunile și stările verificate.
 Exemplele sunt în [docs/design/initial-state.md](docs/design/initial-state.md).
 
+`init` poate descrie și o stare generată: random cu procente și seed, o celulă
+centrală, un tipar plasat la coordonate sau o grilă goală. Se folosește același
+`load_initial_state(automaton)`; pentru apel direct există
+`generate_initial_state(automaton, spec)`. Vezi
+[docs/design/generated-state.md](docs/design/generated-state.md) și exemplele
+`life_random.json`, `rule30_center.json`, `life_glider.json`, `life_empty.json`.
+
 `apply_rules(grid, rules, kernel, boundary="fixed")` aplică regulile în ordine,
 pe grila veche. O regulă fără `condition` și fără `counts` este ramura „altfel”;
 fără nicio potrivire, celula își păstrează starea. Formatul vechi cu `neighbor_state` și
