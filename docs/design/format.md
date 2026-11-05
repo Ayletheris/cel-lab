@@ -3,8 +3,9 @@
 Acesta este contractul pentru fișierele de automate și pentru ieșirea parserului
 de limbaj natural (Livrabil 4). Schema este în
 [`schemas/automaton.schema.json`](../../schemas/automaton.schema.json), în dialectul
-JSON Schema 2020-12. Toate câmpurile de mai jos sunt obligatorii. Nu se acceptă
-câmpuri suplimentare, aliasuri sau valori implicite ascunse.
+JSON Schema 2020-12. Toate câmpurile de mai jos sunt obligatorii în forma
+completă validată de schemă. Încărcătorul completează câmpurile absente conform
+secțiunii de mai jos. Nu se acceptă câmpuri suplimentare sau aliasuri.
 
 | Câmp | Semnificație |
 |---|---|
@@ -166,7 +167,44 @@ necondiționată pentru același `state`, cu rezultatul `otherwise`. Perechile
 rămân în ordinea din JSON. Pentru tabel se transmite `table` către
 `apply_table`, pentru numeric se transmite `expression` către `apply_numeric`.
 Regulile interne nu sunt formatul de ieșire al parserului de limbaj natural.
-Implementarea încărcătorului nu face parte din acest document.
+Pentru a respecta prioritatea primei reguli `from`, încărcătorul ignoră la
+conversie regulile ulterioare cu același `from`, după validarea lor.
+Kernelul este construit de motor la simulare; pe o singură linie folosește
+numai offseturile orizontale.
+
+## Încărcarea din fișier sau text
+
+```python
+from cellab.io import load_automaton, load_automaton_from_text
+
+automaton = load_automaton("automata/examples/life.json")
+automaton = load_automaton_from_text('{"rules": [{"type": "count", "from": 0, "to": 1}]}')
+```
+
+Ambele funcții întorc un `Automaton` compatibil cu `step`. `init` rămâne o
+matrice de liste; simularea poate începe cu `State(np.array(automaton.init))`.
+Fișierele sunt citite în UTF-8, cu sau fără BOM. Erorile de citire, sintaxă
+sau descriere sunt `ValueError`, cu mesaje scurte în română. Apelantul poate
+afișa `str(error)` fără traceback. Pentru JSON invalid se indică linia și coloana.
+
+Valorile implicite se aplică numai câmpurilor absente, nu celor cu `null`:
+
+| Câmp absent | Valoare implicită |
+|---|---|
+| `version` | `1` |
+| `grid.width`, `grid.height` | `10`, respectiv `10` |
+| `grid.boundary` | `"fixed"` |
+| `states` | `[0, 1]` |
+| `neighborhood.type` | `"moore"` |
+| `neighborhood.radius` | `1` |
+| `init` | Matrice de zerouri cu dimensiunile grilei |
+
+`grid` și `neighborhood` pot lipsi integral sau parțial. `rules` este
+obligatoriu și nevid; încărcătorul nu inventează comportamentul automatului.
+Regulile numerice trebuie să declare explicit `states: ["number"]`, iar cele
+de tabel trebuie să declare `grid.height: 1`.
+Aceste valori sunt propuse pentru cardul „Citirea unui automat din fișier”;
+cardul următor, care le-ar preciza, nu este prezent în repository.
 
 ## Stabilitate și acordul echipei
 

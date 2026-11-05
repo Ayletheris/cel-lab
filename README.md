@@ -35,6 +35,23 @@ pip install pytest
 
 ## Folosire
 
+Încărcare din fișier sau text JSON:
+
+```python
+import numpy as np
+
+from cellab.core.model import State
+from cellab.core.step import step
+from cellab.io import load_automaton, load_automaton_from_text
+
+automaton = load_automaton("automata/examples/life.json")
+state = step(automaton, State(np.array(automaton.init)))
+```
+
+`load_automaton_from_text(text)` întoarce același tip de obiect. Ambele funcții
+ridică `ValueError` cu un mesaj scurt pentru intrări invalide. Formatul și
+valorile implicite sunt în [docs/design/format.md](docs/design/format.md).
+
 `apply_rules(grid, rules, kernel, boundary="fixed")` aplică regulile în ordine,
 pe grila veche. O regulă fără `condition` și fără `counts` este ramura „altfel”;
 fără nicio potrivire, celula își păstrează starea. Formatul vechi cu `neighbor_state` și

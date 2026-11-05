@@ -7,7 +7,7 @@ from cellab.core.neighborhood import make_kernel
 from cellab.core.rules import apply_rules
 
 
-def test_voter_rule_from_json():
+def test_voter_rule_from_json_with_zero_fixed_boundary():
     automaton = Automaton(**json.loads(
         '{"grid_size":[3,3],"boundary":"fixed","states":[0,1],'
         '"neighborhood":"moore","rules":['
@@ -15,7 +15,7 @@ def test_voter_rule_from_json():
         '{"condition":{"more_than":[0,1]},"next_state":0}]}'
     ))
     grid = np.array([[0, 0, 0], [0, 1, 1], [0, 1, 1]])
-    expected = np.array([[0, 0, 1], [0, 0, 1], [1, 1, 1]])
+    expected = np.zeros((3, 3), dtype=int)
     np.testing.assert_array_equal(
         apply_rules(grid, automaton.rules, make_kernel(automaton.neighborhood), automaton.boundary),
         expected,

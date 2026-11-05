@@ -42,6 +42,8 @@ def step(automaton: Automaton, state: State, rng: np.random.Generator | None = N
 
     if kind == "counts":
         kernel = make_automaton_kernel(automaton.neighborhood)
+        if grid.ndim == 2 and grid.shape[0] == 1 and kernel.ndim == 2:
+            kernel = kernel[kernel.shape[0] // 2 : kernel.shape[0] // 2 + 1]
         new_grid = apply_rules(grid, automaton.rules, kernel, boundary, rng)
     elif kind == "table":
         new_grid = apply_table(grid, automaton.rules["table"], boundary)

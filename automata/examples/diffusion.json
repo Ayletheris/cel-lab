@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "grid": {
+    "width": 3,
+    "height": 3,
+    "boundary": "fixed"
+  },
+  "states": [
+    "number"
+  ],
+  "neighborhood": {
+    "type": "von_neumann",
+    "radius": 1
+  },
+  "rules": [
+    {
+      "type": "numeric",
+      "expression": "media(celula, nord, sud, est, vest)"
+    }
+  ],
+  "init": [
+    [
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      0
+    ]
+  ]
+}

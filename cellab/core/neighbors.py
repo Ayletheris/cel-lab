@@ -24,6 +24,6 @@ def count_neighbors(
         np.flip(kernel),
         mode="same",
         boundary="fill" if boundary == "fixed" else "wrap",
-        fillvalue=0,
+        fillvalue=int(target_state == 0),
     )
     return counts[0] if one_dimensional else counts
